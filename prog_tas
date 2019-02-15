@@ -74,11 +74,11 @@ void insert(Tas *T, int x, double l)
 	{
 		T->tab[*(lg)+1] = x; // *(T->tab+(T->n)+1) = x;
 		T->priorite[*(lg)+1] = l; // *(T->priorite+(T->n)+1) = l;
-		T->pos[*(lg)+1] = *(lg)+1; //  *(T->pos+(T->n)+1) = (T->n)+1;
+		*(T->pos+(T->n)+1) = (T->n)+1; //   T->pos[*(lg)+1] = *(lg)+1;
 		int a = *(lg)+1; // (T->n)+1;
 		*(lg) += 1;
-		if( *(lg) > T->n ) T->n = *(lg);
-		//T->n += 1 ;
+		//if( *(lg) > T->n ) T->n = *(lg);
+		T->n += 1 ;
 		while( *(T->priorite+a) < *(T->priorite+(a/2)) )
 		{
 			int temp = *(T->tab+(a/2));
@@ -160,7 +160,7 @@ void supp(Tas* T, int x)
 	{
 		*(lg) -= 1;
 		T->pos[x] = -1;
-		affiche_tas(*T);
+		//affiche_tas(*T);
 	}
 	else
 	{
@@ -173,27 +173,53 @@ void supp(Tas* T, int x)
 		T->priorite[*(lg)] = tempd;
 		
 		T->pos[T->tab[ind]] = ind;
-		T->pos[T->tab[ind/2]] = ind/2;
+		//T->pos[T->tab[ind/2]] = ind/2;
 		T->pos[x] = -1;
 		
 		*(lg) -= 1;
 		
-		affiche_tas(*T);
+		//affiche_tas(*T);
 		
-		
-		/*int imin;
-		if( aUnFilsD(*T,ind) )
+		if( !(estFeuille(*T,ind) ) )
 		{
-			if( T->tab[2*i] < T->tab[2*i+1] ) imin = 2*i;
-			else imin = 2*i+1;*/
-			
+			if( aUnFilsD(*T,ind) && T->tab[feuilleD(*T,ind)] < T->tab[ind] )
+			{
+				int temp = T->tab[ind];
+				T->tab[ind] = T->tab[feuilleD(*T,ind)];
+				T->tab[feuilleD(*T,ind)] = temp;
+				
+				double tempd = T->priorite[ind];
+				T->priorite[ind] = T->priorite[feuilleD(*T,ind)];
+				T->priorite[feuilleD(*T,ind)] = tempd;
+				
+				T->pos[T->tab[ind]] = ind;
+				T->pos[T->tab[feuilleD(*T,ind)]] = feuilleD(*T,ind);
+			}
+			else if( T->tab[feuilleG(*T,ind)] < T->tab[ind] )
+			{
+					int temp = T->tab[ind];
+					T->tab[ind] = T->tab[feuilleG(*T,ind)];
+					T->tab[feuilleG(*T,ind)] = temp;
+					
+					double tempd = T->priorite[ind];
+					T->priorite[ind] = T->priorite[feuilleG(*T,ind)];
+					T->priorite[feuilleG(*T,ind)] = tempd;
+					
+					T->pos[T->tab[ind]] = ind;
+					T->pos[T->tab[feuilleG(*T,ind)]] = feuilleG(*T,ind);
+			}
+		}
+		
+		//affiche_tas(*T);
 		
 	}
 }
 
 void recup_min(Tas *t)
 {
-		
+	printf("\ntache prioritaire: %d\tpriorite: %3.2f\n",tache_prioritaire(*t),t->priorite[1]);
+	//tache_prioritaire(*t);
+	supp(t,t->tab[1]);
 }
 
 
@@ -220,11 +246,18 @@ int main()
 	insert(&t,6,4);
 	
 	affiche_tas(t);
-	printf("\ntache prioritaire: %d\tpriorite: %3.2f\n",tache_prioritaire(t),*(t.priorite+1));
+	/*printf("\ntache prioritaire: %d\tpriorite: %3.2f\n",tache_prioritaire(t),*(t.priorite+1));
 	
 	supp(&t,6);
+	
+	insert(&t,7,2);
+	affiche_tas(t);*/
+	
+	recup_min(&t);
+	affiche_tas(t);
 	
 	
 	free_tas(t);
 	return 0;
 }
+
