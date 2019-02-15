@@ -197,16 +197,16 @@ void supp(Tas* T, int x)
 			}
 			else if( T->tab[feuilleG(*T,ind)] < T->tab[ind] )
 			{
-					int temp = T->tab[ind];
-					T->tab[ind] = T->tab[feuilleG(*T,ind)];
-					T->tab[feuilleG(*T,ind)] = temp;
+				int temp = T->tab[ind];
+				T->tab[ind] = T->tab[feuilleG(*T,ind)];
+				T->tab[feuilleG(*T,ind)] = temp;
 					
-					double tempd = T->priorite[ind];
-					T->priorite[ind] = T->priorite[feuilleG(*T,ind)];
-					T->priorite[feuilleG(*T,ind)] = tempd;
+				double tempd = T->priorite[ind];
+				T->priorite[ind] = T->priorite[feuilleG(*T,ind)];
+				T->priorite[feuilleG(*T,ind)] = tempd;
 					
-					T->pos[T->tab[ind]] = ind;
-					T->pos[T->tab[feuilleG(*T,ind)]] = feuilleG(*T,ind);
+				T->pos[T->tab[ind]] = ind;
+				T->pos[T->tab[feuilleG(*T,ind)]] = feuilleG(*T,ind);
 			}
 		}
 		
