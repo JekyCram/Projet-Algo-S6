@@ -18,13 +18,13 @@ typedef struct tas
 
 Tas new_tas(int capa_max)
 {
-	Tas t;	
+	Tas t;
 	t.capacite_max = capa_max;
 	t.n=0;
 	t.tab = (int*) malloc ( t.capacite_max * sizeof(int) );
 	t.priorite = (double*) malloc ( t.capacite_max * sizeof(double) );
 	t.pos = (int*) malloc ( t.capacite_max * sizeof(int) );
-	
+
 	int i;
 	t.tab[0] = 0;
 	t.pos[0] = -1;
@@ -33,7 +33,7 @@ Tas new_tas(int capa_max)
 		*(t.tab+i) = -1;
 		*(t.pos+i) = -1;
 	}
-	
+
 	return t;
 }
 
@@ -84,19 +84,19 @@ void insert(Tas *T, int x, double l)
 			int temp = *(T->tab+(a/2));
 			*(T->tab+(a/2)) = *(T->tab+a);
 			*(T->tab+a) = temp;
-			
+
 			double tempd = *(T->priorite+(a/2));
 			*(T->priorite+(a/2)) = *(T->priorite+a);
 			*(T->priorite+a) = tempd;
-			
+
 			//printf("\nn=%d\ta=%d\ta/2=%d\n%d\t%d\t%d\n",T->n,a,a/2,*(T->pos+(a/2)),*(T->pos+*(T->pos+(a/2))),*(T->pos+T->n));
 			/*temp = *(T->pos+*(T->pos+(a/2))); T->pos[pos[a/2]]
 			*(T->pos+*(T->pos+(a/2))) = *(T->pos+T->n);
 			*(T->pos+T->n) = temp;*/
-			
+
 			T->pos[T->tab[a]] = a;
 			T->pos[T->tab[a/2]] = a/2;
-			
+
 			a = a/2;
 		}
 	}
@@ -111,17 +111,17 @@ int tache_prioritaire(Tas t)
 //EXO 2.2
 int est_vide(Tas t)
 {
-	return t.n == 0 ;
+	return t.tab[0] == 0 ;
 }
 
 int estFeuille(Tas t,int i)
 {
-	return t.tab[2*i] == -1;
+	return t.tab[2*i] == -1 || t.pos[t.tab[2*i]] == -1;
 }
 
 int aUnFilsD(Tas t, int i)
 {
-	return !(estFeuille(t,i)) && (t.tab[2*i+1] != -1);
+	return !(estFeuille(t,i)) && t.tab[2*i+1] != -1 && t.pos[t.tab[2*i+1]] != -1;
 }
 
 int feuilleG(Tas t, int i)
@@ -155,7 +155,8 @@ void supp(Tas* T, int x)
 {
 	int *lg = &(T->tab[0]);
 	int ind = T->pos[x];
-	
+	printf("\nind: %d",ind);
+
 	if( ind == *(lg) )
 	{
 		*(lg) -= 1;
@@ -164,62 +165,82 @@ void supp(Tas* T, int x)
 	}
 	else
 	{
+		//printf("\ninversion dans tab\ntab[ind]: %d\ttab[n]: %d\n",T->tab[ind],T->tab[*(lg)]);
 		int temp = T->tab[ind];
 		T->tab[ind] = T->tab[*(lg)];
 		T->tab[*(lg)] = temp;
-		
+
+		//printf("\ninversion dans priorite\nprio[ind]: %lf\tprio[n]: %lf\n",T->priorite[ind],T->priorite[*(lg)]);
 		double tempd = T->priorite[ind];
 		T->priorite[ind] = T->priorite[*(lg)];
 		T->priorite[*(lg)] = tempd;
-		
+
 		T->pos[T->tab[ind]] = ind;
 		//T->pos[T->tab[ind/2]] = ind/2;
 		T->pos[x] = -1;
-		
+
 		*(lg) -= 1;
-		
-		//affiche_tas(*T);
-		
-		if( !(estFeuille(*T,ind) ) )
+
+		printf("\ntableau avant réinsertion sans la tache prio:");
+		affiche_tas(*T);
+
+		while( !(estFeuille(*T,ind) ) )
 		{
-			if( aUnFilsD(*T,ind) && T->tab[feuilleD(*T,ind)] < T->tab[ind] )
+			printf("tab[ind] (%d) n'est pas une feuille\n", T->tab[ind]);
+			if( aUnFilsD(*T,ind) && T->priorite[feuilleD(*T,ind)] < T->priorite[ind] )
 			{
+				printf("tab[ind] (%d) a un fils a droite: %d de priorite: %lf\n", T->tab[ind], T->tab[feuilleD(*T,ind)], T->priorite[feuilleD(*T,ind)]);
 				int temp = T->tab[ind];
 				T->tab[ind] = T->tab[feuilleD(*T,ind)];
 				T->tab[feuilleD(*T,ind)] = temp;
-				
+
 				double tempd = T->priorite[ind];
 				T->priorite[ind] = T->priorite[feuilleD(*T,ind)];
 				T->priorite[feuilleD(*T,ind)] = tempd;
-				
+
 				T->pos[T->tab[ind]] = ind;
 				T->pos[T->tab[feuilleD(*T,ind)]] = feuilleD(*T,ind);
+
+				printf("Inversion done!");
+				affiche_tas(*T);
+
+				ind = feuilleD(*T,ind);     //T->pos[T->tab[ind]];
+				printf("nouveau ind: %d\t\ttache: %d\n",ind,T->tab[ind]);
 			}
-			else if( T->tab[feuilleG(*T,ind)] < T->tab[ind] )
+			else if( T->priorite[feuilleG(*T,ind)] < T->priorite[ind] )
 			{
+				printf("tab[ind] (%d) a un fils a gauche: %d de priorite: %lf\n", T->tab[ind], T->tab[feuilleG(*T,ind)], T->priorite[feuilleG(*T,ind)]);
 				int temp = T->tab[ind];
 				T->tab[ind] = T->tab[feuilleG(*T,ind)];
 				T->tab[feuilleG(*T,ind)] = temp;
-					
+
 				double tempd = T->priorite[ind];
 				T->priorite[ind] = T->priorite[feuilleG(*T,ind)];
 				T->priorite[feuilleG(*T,ind)] = tempd;
-					
+
 				T->pos[T->tab[ind]] = ind;
 				T->pos[T->tab[feuilleG(*T,ind)]] = feuilleG(*T,ind);
+
+				printf("Inversion done!");
+				affiche_tas(*T);
+
+				ind = feuilleG(*T,ind);     //T->pos[T->tab[ind]];
+				printf("nouveau ind: %d\t\ttache: %d\n",ind,T->tab[ind]);
 			}
+			else break;
 		}
-		
+
+        printf("tab[%d] = %d est une feuille ou est bien insere\n",ind,T->tab[ind]);
 		//affiche_tas(*T);
-		
+
 	}
 }
 
-void recup_min(Tas *t)
+int recup_min(Tas *t)
 {
 	printf("\ntache prioritaire: %d\tpriorite: %3.2f\n",tache_prioritaire(*t),t->priorite[1]);
-	//tache_prioritaire(*t);
 	supp(t,t->tab[1]);
+	return tache_prioritaire(*t);
 }
 
 
@@ -237,27 +258,32 @@ int main()
 	//affiche_tas(t);
 	insert(&t,2,5);
 	//affiche_tas(t);
-	insert(&t,3,8);
+	insert(&t,3,6);
 	//affiche_tas(t);
 	insert(&t,4,7);
 	//affiche_tas(t);
 	insert(&t,5,14);
 	//affiche_tas(t);
 	insert(&t,6,4);
-	
+
 	affiche_tas(t);
 	/*printf("\ntache prioritaire: %d\tpriorite: %3.2f\n",tache_prioritaire(t),*(t.priorite+1));
-	
-	supp(&t,6);
-	
+
+	supp(&t,6);*/
+
+	printf("\ninsertion de (7,2)");
 	insert(&t,7,2);
-	affiche_tas(t);*/
-	
+	affiche_tas(t);
+
 	recup_min(&t);
 	affiche_tas(t);
-	
-	
+	printf("\ntache prio: %d\n",tache_prioritaire(t));
+
+	printf("Suppression de l'élément 5");
+	supp(&t,5);
+	affiche_tas(t);
+
+
 	free_tas(t);
 	return 0;
 }
-
