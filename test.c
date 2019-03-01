@@ -638,7 +638,7 @@ Tas new_tas(int capa_max, int dep)
 	{
 		t.tab[i] = -1;
 		t.pos[i] = -1;
-		t.origine = dep;
+		t.origine[i] = dep;
 	}
 
 	return t;
@@ -866,6 +866,10 @@ void supp(Tas* T, int x)
 			*(T->tab+(ind/2)) = *(T->tab+ind);
 			*(T->tab+ind) = temp;
 
+			temp = T->origine[ind/2];
+            T->origine[ind/2] = T->origine[ind];
+            T->origine[ind] = temp;
+
 			double tempd = *(T->priorite+(ind/2));
 			*(T->priorite+(ind/2)) = *(T->priorite+ind);
 			*(T->priorite+ind) = tempd;
@@ -905,13 +909,13 @@ void updatePrio(Coordonnees c, Tas* t)
     int i,j;
 
     //on visite tous les sommets du graphe
-    for( i=0 ; i<c->n ; i++ )
+    for( i=1 ; i<=c->n ; i++ )
     {
         //on vérifie si le sommet à déjà été visité
         if( t->pos[i] == -1 )
         {
             //Si c'est le cas on parcours tous ses voisins
-            for( j=0 ; j<c->n ; j++ )
+            for( j=1 ; j<=c->n ; j++ )
             {
                 float d = getDist(c,i,j);
                 //on vérifie s'ils ont déjà été visité et si sa priorité initiale est sup à celle avec le sommet i
@@ -961,7 +965,9 @@ void prim(Coordonnees c, Graphe g, int dep)
     recup_min(&t);
     while( !est_vide(t ))
     {
-
+        updatePrio(c,&t);
+        graphe_ajouter_arete(g,t.origine[1], t.tab[1]);
+        recup_min(&t);
     }
 
     /*for ( i=0 ; i<c->n ; i++ )
